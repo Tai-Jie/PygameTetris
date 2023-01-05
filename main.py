@@ -107,11 +107,35 @@ def main():
         pygame.draw.rect(screen, white, [(display_width - endMenu_width)/2 - margin_width, 145, 410, 410], 5, border_radius=5) # menu
         pygame.draw.rect(screen, black, [(display_width - endMenu_width)/2, 150, endMenu_width, endMenu_height])
 
+    def pauseLoop():
+        drawMenu()
+        display('Pause', display_width/2, 250, s=48, center=True)
+        pygame.draw.rect(screen, white, [(display_width - button_width)/2, 375, button_width, button_height], 5, 5) # single player
+        pygame.draw.rect(screen, white, [(display_width - button_width)/2, 465, button_width, button_height], 5, 5) # two player
+        display('Continue', display_width/2, 410, center=True)
+        display('Restart  ', display_width/2, 500, center=True)
+        pygame.display.update()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mousePos = pygame.mouse.get_pos()
+                    if (display_width - button_width)/2 <= mousePos[0] <= (display_width + button_width)/2 and 375 <= mousePos[1] <= 375+70:
+                        return
+                    
+                    elif (display_width - button_width)/2 <= mousePos[0] <= (display_width + button_width)/2 and 465 <= mousePos[1] <= 465+70: 
+                        modeChoiceLoop()
+
     def modeChoiceLoop():
+        start_level = 0
         drawMenu()
         display('Choose Mode', display_width/2, 250, s=48, center=True)
         pygame.draw.rect(screen, white, [(display_width - button_width)/2, 375, button_width, button_height], 5, 5) # single player
         pygame.draw.rect(screen, white, [(display_width - button_width)/2, 465, button_width, button_height], 5, 5) # two player
+        display('start level: ' + str(start_level), display_width/2, 325, center=True)
         display('Single player', display_width/2, 410, center=True)
         display('Two player', display_width/2, 500, center=True)
         pygame.display.update()
@@ -125,11 +149,14 @@ def main():
                     mousePos = pygame.mouse.get_pos()
                     if (display_width - button_width)/2 <= mousePos[0] <= (display_width + button_width)/2 and 375 <= mousePos[1] <= 375+70:
                         playfield1.resetField()
+                        playfield1.level = start_level
                         return singleGameLoop()
                     
                     elif (display_width - button_width)/2 <= mousePos[0] <= (display_width + button_width)/2 and 465 <= mousePos[1] <= 465+70: 
                         playfield1.resetField()
                         playfield2.resetField()
+                        playfield1.level = start_level
+                        playfield2.level = start_level
                         return doubleGameLoop()
 
     def singleGameLoop():
@@ -165,6 +192,12 @@ def main():
 
                     if event.key == pygame.K_SPACE:
                         playfield1.drop()
+
+                    
+                    if event.key == pygame.K_ESCAPE:
+                        pauseLoop()
+                        screen.fill(black)
+                        drawBackground()
                         
                 if event.type == pygame.KEYUP:
                     pass
@@ -192,12 +225,11 @@ def main():
         frame = 1
         while running:
             if frame%playfield1.getFrame_to_Drop() == 0:
-                # print(Playfield.Frame_to_Drop[playfield1.level])
                 playfield1.shiftDown()
             
             if frame%playfield2.getFrame_to_Drop() == 0:
-                # print(Playfield.Frame_to_Drop[playfield1.level])
                 playfield2.shiftDown()
+
             # event handling, gets all event from the event queue
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -235,6 +267,12 @@ def main():
 
                     if event.key == pygame.K_RCTRL:
                         playfield2.drop()
+
+
+                    if event.key == pygame.K_ESCAPE:
+                        pauseLoop()
+                        screen.fill(black)
+                        drawTwoBackground()
                         
                 if event.type == pygame.KEYUP:
                     pass

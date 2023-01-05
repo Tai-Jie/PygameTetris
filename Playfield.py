@@ -10,11 +10,13 @@ class Playfield():
     score = 0
     level = 0
     lines = 0
+    touch = False
 
     def __init__(self) -> None:
         self.field = [[black]*20 for i in range(10)]
         self.rowNum = [i for i in range(20)]
         self.tetromino = Tetromino()
+        self.touch = False
         self.respawnTetrmino()
 
     def rotate(self):
@@ -33,6 +35,11 @@ class Playfield():
     def shiftDown(self):
         if self.checkCollision(self.tetromino.centerX, self.tetromino.centerY + 1):
             self.tetromino.centerY += 1
+    
+    def shiftUp(self):
+        self.tetromino.centerY -= 1
+        if self.checkCollision():
+            pass
 
     def drop(self):
         while self.checkCollision(self.tetromino.centerX, self.tetromino.centerY + 1):
@@ -44,21 +51,31 @@ class Playfield():
     def checkCollision(self, newX, newY) -> bool: # collision -> false
         ground = False
         for block in self.tetromino.blocks:
-            if block[0] + newX < 0 or block[0] + newX >= 10 or self.field[block[0] + newX][self.rowNum[block[1] + newY]] != black:
+
+            if block[0] + newX < 0 or block[0] + newX >= 10:
+                return False
+            elif self.field[block[0] + newX][self.rowNum[block[1] + self.tetromino.centerY]] != black:
+                return False
+
+            if block[1] + newY < 0:
                 return False
             
-            if block[1] + newY == 20 - 1:
-                ground = True
-            elif not self.field[block[0] + newX][self.rowNum[block[1] + newY + 1]] == black:
+            if block[1] + newY >= 20:
+                ground = True     
+            elif self.field[block[0] + newX][self.rowNum[block[1] + newY]] != black:
                 ground = True
 
-        if ground:
+        if ground and self.touch:
             for block in self.tetromino.blocks:
-                self.field[block[0] + newX][self.rowNum[block[1] + newY]] = self.tetromino.color
-                # print(block[0] + newX, block[1] + newY, self.field[block[0] + newX][block[1] + newY])
+                self.field[block[0] + self.tetromino.centerX][self.rowNum[block[1] + self.tetromino.centerY]] = self.tetromino.color
             self.checkfull()
             self.respawnTetrmino()
             return False
+
+        if ground and (not self.touch):
+            self.touch = True
+            return False
+
         return True
 
     def checkfull(self):
@@ -133,6 +150,7 @@ class Playfield():
         self.score = 0
         self.level = 0
         self.lines = 0
+        self.touch = False
         self.field = [[black]*20 for i in range(10)]
         self.rowNum = [i for i in range(20)]
         self.respawnTetrmino()
@@ -141,6 +159,7 @@ class Playfield():
         self.tetromino.randShape()
         self.tetromino.centerX = 5
         self.tetromino.centerY = 1
+        self.touch = False
         for block in self.tetromino.blocks:
             if not self.field[block[0] + 5][self.rowNum[block[1] + 1 + 1]] == black:
                 end_event = pygame.event.Event(Game_End)
